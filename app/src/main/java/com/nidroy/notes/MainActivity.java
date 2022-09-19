@@ -6,21 +6,16 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     // переменные для работы с БД
     private DatabaseHelper databaseHelper;
     private SQLiteDatabase database;
-
-    // переменные компонентов верстки
-    Button button;
-    TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,26 +33,26 @@ public class MainActivity extends AppCompatActivity {
         } catch (SQLException exception) {
             throw exception;
         }
+    }
 
-        // определление переменных через компоненты в XML разметки
-        button = (Button) findViewById(R.id.button);
-        textView = (TextView) findViewById(R.id.textView);
+    // выполнить запрос с ответом в виде таблицы
+    private List<List<String>> ExecuteQueryWithAnswer(String query) {
 
-        // обработчик нажатия на кнопку
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String data = "";
+        List<List<String>> table = new ArrayList<List<String>>();
 
-                Cursor cursor = database.rawQuery("SELECT * FROM Class_name", null);
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast()) {
-                    data += cursor.getString(1) + " | ";
-                    cursor.moveToNext();
-                }
+        Cursor cursor = database.rawQuery(query, null);
+        int columnCount = cursor.getColumnCount();
 
-                textView.setText(data);
+        for (int i = 0; i < columnCount; i++) {
+            List<String> cells = new ArrayList<>();
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                cells.add(cursor.getString(i));
+                cursor.moveToNext();
             }
-        });
+            table.add(cells);
+        }
+
+        return table;
     }
 }
